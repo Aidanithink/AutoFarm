@@ -1,0 +1,76 @@
+-- Script to create a movable GUI for AutoMuscle action
+
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local muscleButton = Instance.new("TextButton")
+
+-- Set up GUI
+screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false  -- Prevent GUI from resetting on respawn
+
+frame.Parent = screenGui
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+frame.Size = UDim2.new(0, 200, 0, 60)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 0
+
+-- AutoMuscle Button
+muscleButton.Parent = frame
+muscleButton.Size = UDim2.new(0, 180, 0, 40)
+muscleButton.Position = UDim2.new(0, 10, 0, 10)
+muscleButton.Text = "Auto Muscle"
+muscleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+muscleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+
+-- Variables to control AutoMuscle
+local AutoMuscle = false
+
+local Remote = game:GetService("ReplicatedStorage").RemoteEvent
+
+-- Toggle AutoMuscle when button is clicked
+muscleButton.MouseButton1Click:Connect(function()
+    AutoMuscle = not AutoMuscle
+    muscleButton.BackgroundColor3 = AutoMuscle and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+end)
+
+-- Mobile drag functionality
+local UserInputService = game:GetService("UserInputService")
+
+local dragging = false
+local dragStart
+local startPos
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- Main loop for AutoMuscle action
+while true do
+    wait(1/60) -- wait a frame
+    if AutoMuscle then
+        local args = {
+            [1] = {
+                [1] = "GainMuscle"
+            }
+        }
+        Remote:FireServer(unpack(args))
+    end
+end
