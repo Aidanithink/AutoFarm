@@ -1,18 +1,19 @@
--- Script to create a movable GUI for AutoMuscle, AutoAttack actions
+-- Script to create a movable GUI for AutoMuscle, AutoAttack, and AutoEat actions
 
 local player = game.Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local muscleButton = Instance.new("TextButton")
 local attackButton = Instance.new("TextButton")
+local eatButton = Instance.new("TextButton")
 
 -- Set up GUI
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false  -- Prevent GUI from resetting on respawn
 
 frame.Parent = screenGui
-frame.Position = UDim2.new(0.5, -100, 0.5, -120)
-frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Position = UDim2.new(0.5, -100, 0.5, -180)
+frame.Size = UDim2.new(0, 200, 0, 180)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BorderSizePixel = 0
 
@@ -32,10 +33,20 @@ attackButton.Text = "Auto Attack"
 attackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 attackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 
--- Variables to control AutoMuscle and AutoAttack
+-- AutoEat Button
+eatButton.Parent = frame
+eatButton.Size = UDim2.new(0, 180, 0, 40)
+eatButton.Position = UDim2.new(0, 10, 0, 110)
+eatButton.Text = "Auto Eat"
+eatButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+eatButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+
+-- Variables to control AutoMuscle, AutoAttack, and AutoEat
 local AutoMuscle = false
 local AutoAttack = false
+local AutoEat = false
 local Remote = game:GetService("ReplicatedStorage").RemoteEvent
+local foodTool = workspace:WaitForChild("Meat"):FindFirstChild("FoodTool")
 
 -- Toggle AutoMuscle when button is clicked
 muscleButton.MouseButton1Click:Connect(function()
@@ -48,6 +59,13 @@ attackButton.MouseButton1Click:Connect(function()
     AutoAttack = not AutoAttack
     attackButton.BackgroundColor3 = AutoAttack and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
     attackButton.Text = AutoAttack and "Auto Attack : ON" or "Auto Attack : OFF"
+end)
+
+-- Toggle AutoEat when button is clicked
+eatButton.MouseButton1Click:Connect(function()
+    AutoEat = not AutoEat
+    eatButton.BackgroundColor3 = AutoEat and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(0, 0, 255)
+    eatButton.Text = AutoEat and "Auto Eat : ON" or "Auto Eat : OFF"
 end)
 
 -- Mobile drag functionality
@@ -78,7 +96,7 @@ frame.InputEnded:Connect(function(input)
     end
 end)
 
--- Main loop for AutoMuscle and AutoAttack actions
+-- Main loop for AutoMuscle, AutoAttack, and AutoEat actions
 while true do
     wait(0.1) -- wait 0.1 seconds
     if AutoMuscle then
@@ -92,5 +110,15 @@ while true do
 
     if AutoAttack then
         Remote:FireServer({"AttackClick"})
+    end
+
+    if AutoEat and foodTool then
+        local args = {
+            [1] = {
+                [1] = "UseTool",  -- Assuming 'UseTool' is the action to trigger eating
+                [2] = foodTool
+            }
+        }
+        Remote:FireServer(unpack(args))
     end
 end
