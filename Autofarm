@@ -1,17 +1,18 @@
--- Script to create a movable GUI for AutoMuscle action
+-- Script to create a movable GUI for AutoMuscle, AutoAttack actions
 
 local player = game.Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local muscleButton = Instance.new("TextButton")
+local attackButton = Instance.new("TextButton")
 
 -- Set up GUI
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false  -- Prevent GUI from resetting on respawn
 
 frame.Parent = screenGui
-frame.Position = UDim2.new(0.5, -100, 0.5, -50)
-frame.Size = UDim2.new(0, 200, 0, 60)
+frame.Position = UDim2.new(0.5, -100, 0.5, -120)
+frame.Size = UDim2.new(0, 200, 0, 120)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BorderSizePixel = 0
 
@@ -23,15 +24,30 @@ muscleButton.Text = "Auto Muscle"
 muscleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 muscleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 
--- Variables to control AutoMuscle
-local AutoMuscle = false
+-- AutoAttack Button
+attackButton.Parent = frame
+attackButton.Size = UDim2.new(0, 180, 0, 40)
+attackButton.Position = UDim2.new(0, 10, 0, 60)
+attackButton.Text = "Auto Attack"
+attackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+attackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 
+-- Variables to control AutoMuscle and AutoAttack
+local AutoMuscle = false
+local AutoAttack = false
 local Remote = game:GetService("ReplicatedStorage").RemoteEvent
 
 -- Toggle AutoMuscle when button is clicked
 muscleButton.MouseButton1Click:Connect(function()
     AutoMuscle = not AutoMuscle
     muscleButton.BackgroundColor3 = AutoMuscle and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+end)
+
+-- Toggle AutoAttack when button is clicked
+attackButton.MouseButton1Click:Connect(function()
+    AutoAttack = not AutoAttack
+    attackButton.BackgroundColor3 = AutoAttack and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    attackButton.Text = AutoAttack and "Auto Attack : ON" or "Auto Attack : OFF"
 end)
 
 -- Mobile drag functionality
@@ -62,9 +78,9 @@ frame.InputEnded:Connect(function(input)
     end
 end)
 
--- Main loop for AutoMuscle action
+-- Main loop for AutoMuscle and AutoAttack actions
 while true do
-    wait(1/60) -- wait a frame
+    wait(0.1) -- wait 0.1 seconds
     if AutoMuscle then
         local args = {
             [1] = {
@@ -72,5 +88,9 @@ while true do
             }
         }
         Remote:FireServer(unpack(args))
+    end
+
+    if AutoAttack then
+        Remote:FireServer({"AttackClick"})
     end
 end
