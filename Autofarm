@@ -1,26 +1,26 @@
--- Script to create a movable GUI for AutoMuscle, AutoAttack, and AutoEat actions
+-- Script to create a movable GUI with minimize button for AutoMuscle, AutoAttack actions
 
 local player = game.Players.LocalPlayer
 local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local muscleButton = Instance.new("TextButton")
 local attackButton = Instance.new("TextButton")
-local eatButton = Instance.new("TextButton")
+local minimizeButton = Instance.new("TextButton")
 
 -- Set up GUI
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false  -- Prevent GUI from resetting on respawn
 
 frame.Parent = screenGui
-frame.Position = UDim2.new(0.5, -100, 0.5, -180)
-frame.Size = UDim2.new(0, 200, 0, 180)
+frame.Position = UDim2.new(0.5, -100, 0.5, -140)
+frame.Size = UDim2.new(0, 200, 0, 140)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BorderSizePixel = 0
 
 -- AutoMuscle Button
 muscleButton.Parent = frame
 muscleButton.Size = UDim2.new(0, 180, 0, 40)
-muscleButton.Position = UDim2.new(0, 10, 0, 10)
+muscleButton.Position = UDim2.new(0, 10, 0, 30)
 muscleButton.Text = "Auto Muscle"
 muscleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 muscleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
@@ -28,25 +28,24 @@ muscleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 -- AutoAttack Button
 attackButton.Parent = frame
 attackButton.Size = UDim2.new(0, 180, 0, 40)
-attackButton.Position = UDim2.new(0, 10, 0, 60)
+attackButton.Position = UDim2.new(0, 10, 0, 80)
 attackButton.Text = "Auto Attack"
 attackButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 attackButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 
--- AutoEat Button
-eatButton.Parent = frame
-eatButton.Size = UDim2.new(0, 180, 0, 40)
-eatButton.Position = UDim2.new(0, 10, 0, 110)
-eatButton.Text = "Auto Eat"
-eatButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-eatButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+-- Minimize Button
+minimizeButton.Parent = frame
+minimizeButton.Size = UDim2.new(0, 20, 0, 20)
+minimizeButton.Position = UDim2.new(1, -25, 0, 5)
+minimizeButton.Text = "-"
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 
--- Variables to control AutoMuscle, AutoAttack, and AutoEat
+-- Variables to control AutoMuscle, AutoAttack, and GUI state
 local AutoMuscle = false
 local AutoAttack = false
-local AutoEat = false
+local isMinimized = false
 local Remote = game:GetService("ReplicatedStorage").RemoteEvent
-local foodTool = workspace:WaitForChild("Meat"):FindFirstChild("FoodTool")
 
 -- Toggle AutoMuscle when button is clicked
 muscleButton.MouseButton1Click:Connect(function()
@@ -61,11 +60,13 @@ attackButton.MouseButton1Click:Connect(function()
     attackButton.Text = AutoAttack and "Auto Attack : ON" or "Auto Attack : OFF"
 end)
 
--- Toggle AutoEat when button is clicked
-eatButton.MouseButton1Click:Connect(function()
-    AutoEat = not AutoEat
-    eatButton.BackgroundColor3 = AutoEat and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(0, 0, 255)
-    eatButton.Text = AutoEat and "Auto Eat : ON" or "Auto Eat : OFF"
+-- Toggle minimize state when minimize button is clicked
+minimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    muscleButton.Visible = not isMinimized
+    attackButton.Visible = not isMinimized
+    frame.Size = isMinimized and UDim2.new(0, 200, 0, 30) or UDim2.new(0, 200, 0, 140)
+    minimizeButton.Text = isMinimized and "+" or "-"
 end)
 
 -- Mobile drag functionality
@@ -96,7 +97,7 @@ frame.InputEnded:Connect(function(input)
     end
 end)
 
--- Main loop for AutoMuscle, AutoAttack, and AutoEat actions
+-- Main loop for AutoMuscle and AutoAttack actions
 while true do
     wait(0.1) -- wait 0.1 seconds
     if AutoMuscle then
@@ -110,15 +111,5 @@ while true do
 
     if AutoAttack then
         Remote:FireServer({"AttackClick"})
-    end
-
-    if AutoEat and foodTool then
-        local args = {
-            [1] = {
-                [1] = "UseTool",  -- Assuming 'UseTool' is the action to trigger eating
-                [2] = foodTool
-            }
-        }
-        Remote:FireServer(unpack(args))
     end
 end
